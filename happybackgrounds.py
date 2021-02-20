@@ -89,7 +89,7 @@ def create_svg(
             Font Awesome Free {FA_VERSION} by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free
             (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
         -->
-        <rect style="fill:{background}" x="0" y="0" width="{width}" height="{height}">
+        <rect style="fill:{background}" x="0" y="0" width="{width}" height="{height}"/>
         """,
     ]
 
