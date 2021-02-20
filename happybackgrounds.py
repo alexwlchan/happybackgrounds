@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+import argparse
 import colorsys
 import os
 import random
+import sys
+import tempfile
 from urllib.request import urlretrieve
 from xml.etree import ElementTree as ET
 import zipfile
@@ -54,7 +57,7 @@ def get_font_awesome_icon_path(*, icon_name):
 
 
 def create_svg(
-    *, background, icon_name, min_icon_count, max_icon_count, min_scale, max_scale
+    *, background, icon_name, min_icon_count, max_icon_count, min_scale, max_scale, out_path=None
 ):
     """
     Creates an SVG file.  Returns the path to the generated SVG.
@@ -63,6 +66,16 @@ def create_svg(
         (e.g. #ff0000).
     :param icon_name: The name of the Font Awesome icon to use
         (e.g. snowflake)
+    :param min_icon_count: What's the smallest number of icons to add?
+    :param max_icon_count: What's the most icons to add?
+    :param min_scale: How small can the icons get?
+    :param max_scale: How big can the icons get?
+    :param out_path: Where to save the file.
+
+    Note: because of the way icons are added, the min/max icon counts
+    are rough estimates, and you may see fewer icons in the viewbox than
+    you actually asked for.
+
     """
     width = 1600
     height = 900
@@ -119,28 +132,55 @@ def create_svg(
 
         lines.append(
             f"""
-        <g transform="translate({x_start} {y_start}) scale({scale} {scale})"
-           style="fill: {fill_color}">
-            <g transform="rotate({rotation_angle} 0 0)">
+        <g transform="rotate({rotation_angle} 250 250)">
+            <g transform="translate({x_start} {y_start}) scale({scale} {scale})"
+               style="fill: {fill_color}">
                 {icon_path}
             </g>
         </g>"""
         )
 
-    # Add the closing tags, write to the file.
+    # Add the closing tags, write to the file.  We tidy up the XML a bit.
     lines.append("</svg>")
 
-    with open("output.svg", "w") as outfile:
+    if out_path is None:
+        out_path, _ = tempfile.mkstemp()
+
+    with open(out_path, "w") as outfile:
         outfile.write("\n".join(lines))
-    return "output.svg"
+
+    return out_path
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Create low-contrast backgrounds from Font Awesome icons.  Prints the path to a generated SVG file."
+    )
+    parser.add_argument("--background", help="a six-digit CSS colour (e.g. #ff0000)", required=True)
+    parser.add_argument("--icon_name", help="the Font Awesome icon to use (e.g. snowflake)", required=True)
+    parser.add_argument("--min_icon_count", type=int, default=5, help="(default: 5)")
+    parser.add_argument("--max_icon_count", type=int, default=10, help="(default: 15)")
+    parser.add_argument("--min_scale", type=float, default=0.2, help="(default: 0.2)")
+    parser.add_argument("--max_scale", type=float, default=1, help="(default: 1)")
+
+    parser.add_argument("--out_path", help="Where to save the SVG")
+
+    result = parser.parse_args()
+
+    if result.min_icon_count > result.max_icon_count:
+        sys.exit(f"error: --min_icon_count={result.min_icon_count} should be less than or equal to --max_icon_count={result.max_icon_count}")
+
+    if result.min_scale > result.max_scale:
+        sys.exit(f"error: --min_scale={result.min_scale} should be less than or equal to --max_scale={result.max_scale}")
+
+    return {
+        name: getattr(result, name)
+        for name in dir(result)
+        if not name.startswith("_")
+    }
 
 
 if __name__ == "__main__":
-    create_svg(
-        background="#d6fcff",
-        icon_name="snowflake",
-        min_icon_count=5,
-        max_icon_count=10,
-        min_scale=0.2,
-        max_scale=1,
-    )
+    kwargs = parse_args()
+    out_path = create_svg(**kwargs)
+    print(out_path)

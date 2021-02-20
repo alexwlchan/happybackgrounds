@@ -5,3 +5,5 @@
 <img src="mars.svg">
 
 <img src="plants.svg">
+
+<img src="happy.svg">
