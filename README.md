@@ -2,15 +2,15 @@
 
 <table>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/alexwlchan/happybackgrounds/joy/luna.svg"></td>
-        <td><img src="https://raw.githubusercontent.com/alexwlchan/happybackgrounds/joy/starfield.svg"></td>
+        <td><img src="readme_images/luna.png"></td>
+        <td><img src="readme_images/starfield.png"></td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/alexwlchan/happybackgrounds/joy/snowflake.svg"></td>
-        <td><img src="https://raw.githubusercontent.com/alexwlchan/happybackgrounds/joy/plants.svg"></td>
+        <td><img src="readme_images/snowflake.png"></td>
+        <td><img src="readme_images/plants.png"></td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/alexwlchan/happybackgrounds/joy/mars.svg"></td>
-        <td><img src="https://raw.githubusercontent.com/alexwlchan/happybackgrounds/joy/happy.svg"></td>
+        <td><img src="readme_images/mars.png"></td>
+        <td><img src="readme_images/happy.png"></td>
     </tr>
 </table>
