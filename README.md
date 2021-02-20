@@ -57,7 +57,13 @@ Right now I run the script repeatedly until I get a "nice-looking" result; the s
 
 *   The script isn't very smart about where it places icons.
     Sometimes they overlap, sometimes they disappear outside the viewbox.
+
+    Better awareness of where icons are, and spacing them nicely, would improve the success rate dramatically.
+    This also seems hard, so I skipped doing that for the initial attempt.
+
 *   The choice of colours is sometimes good, sometimes not-so-good.
+    It's hard to know how to pick "good" colours.
+    Sometimes a lot of variety is good (e.g. with the Mars rockets), other times having them close together is better (e.g. the stars).
 
 
 
