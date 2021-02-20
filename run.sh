@@ -35,3 +35,9 @@ python3 happybackgrounds.py \
     --background="#ffc905" \
     --icon_name="grin-beam" \
     --out_path="happy.svg"
+
+python3 happybackgrounds.py \
+    --background="#a8a8a8" \
+    --icon_name="moon" \
+    --out_path="luna.svg" \
+    --max_icon_count=20

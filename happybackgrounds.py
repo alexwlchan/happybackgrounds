@@ -132,11 +132,9 @@ def create_svg(
 
         lines.append(
             f"""
-        <g transform="rotate({rotation_angle} 250 250)">
-            <g transform="translate({x_start} {y_start}) scale({scale} {scale})"
-               style="fill: {fill_color}">
-                {icon_path}
-            </g>
+        <g transform="rotate({rotation_angle} 250 250) translate({x_start} {y_start}) scale({scale} {scale})"
+           style="fill: {fill_color}">
+            {icon_path}
         </g>"""
         )
 
