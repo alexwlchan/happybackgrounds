@@ -81,6 +81,7 @@ def create_svg(
     height = 900
 
     # We want an SVG with a 16:9 ratio and the specified background color.
+    # I'm including a <rect> so that ImageMagick picks up the background.
     lines = [
         f'<svg viewBox="0 0 {width} {height}" style="background-color:{background}" xmlns="http://www.w3.org/2000/svg">',
         f"""
@@ -88,6 +89,7 @@ def create_svg(
             Font Awesome Free {FA_VERSION} by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free
             (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
         -->
+        <rect style="fill:{background}" x="0" y="0" width="{width}" height="{height}">
         """,
     ]
 
