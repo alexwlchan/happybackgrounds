@@ -144,7 +144,7 @@ def create_svg(
     lines.append("</svg>")
 
     if out_path is None:
-        out_path, _ = tempfile.mkstemp()
+        _, out_path = tempfile.mkstemp(suffix=".svg")
 
     with open(out_path, "w") as outfile:
         outfile.write("\n".join(lines))
