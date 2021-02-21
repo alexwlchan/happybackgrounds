@@ -57,7 +57,7 @@ def get_font_awesome_icon_path(*, icon_name):
 
 
 def create_svg(
-    *, background, icon_name, min_icon_count, max_icon_count, min_scale, max_scale, out_path=None
+    *, background, icon_name, min_icon_count, max_icon_count, min_scale, max_scale, avoid_center=False, out_path=None
 ):
     """
     Creates an SVG file.  Returns the path to the generated SVG.
@@ -71,6 +71,7 @@ def create_svg(
     :param min_scale: How small can the icons get?
     :param max_scale: How big can the icons get?
     :param out_path: Where to save the file.
+    :param avoid_center: Should it avoid the centre?
 
     Note: because of the way icons are added, the min/max icon counts
     are rough estimates, and you may see fewer icons in the viewbox than
@@ -122,8 +123,19 @@ def create_svg(
     icon_path = get_font_awesome_icon_path(icon_name=icon_name)
 
     for _ in range(icon_count):
-        x_start = random.randint(-100, width + 100)
-        y_start = random.randint(-100, height + 100)
+        if avoid_center:
+            x_start = random.choice([
+                random.randint(-50, width // 4),
+                random.randint(3 * width // 4, width + 50)
+            ])
+            y_start = random.choice([
+                random.randint(-50, height // 4),
+                random.randint(3 * height // 4, height + 50)
+            ])
+        else:
+            x_start = random.randint(-50, width + 50)
+            y_start = random.randint(-50, height + 50)
+
         rotation_angle = random.randint(0, 360)
         scale = random.uniform(min_scale, max_scale)
 
@@ -162,6 +174,7 @@ def parse_args():
     parser.add_argument("--max_icon_count", type=int, default=10, help="(default: 15)")
     parser.add_argument("--min_scale", type=float, default=0.2, help="(default: 0.2)")
     parser.add_argument("--max_scale", type=float, default=1, help="(default: 1)")
+    parser.add_argument("--avoid_center", action="store_true")
 
     parser.add_argument("--out_path", help="Where to save the SVG")
 
