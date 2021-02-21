@@ -22,7 +22,7 @@ FA_LOCAL_PATH = os.path.basename(FA_URL)
 
 def get_font_awesome_icon_path(*, icon_name):
     """
-    Returns the <path> element of a Font Awesome icon.
+    Returns the (width, height, <path> element) of a Font Awesome icon.
     """
     if not os.path.exists(FA_LOCAL_PATH):
         urlretrieve(url=FA_URL, filename=FA_LOCAL_PATH)
@@ -49,15 +49,95 @@ def get_font_awesome_icon_path(*, icon_name):
         # We care about getting the <path> element which defines the icon.
         root = ET.fromstring(icon_contents)
 
+        _, _, width, height = root.attrib["viewBox"].split()
+
         for element in root:
             if element.tag == "{http://www.w3.org/2000/svg}path":
-                return ET.tostring(element).decode("ascii")
+                return (int(width), int(height), ET.tostring(element).decode("ascii"))
         else:  # no return
             raise RuntimeError(f"Could not find <path> in {inner_name}!")
 
 
+def create_xy_positions(
+    *, width, height, columns, rows, min_nudge, max_nudge, count, avoid_center
+):
+    """
+    Based on an algorithm from Kate's friend.
+
+    This will give you the (x, y) coordinates for the top left-hand corner
+    of the icon.
+    """
+    # Put the icons randomly on an N×M grid
+    valid_positions = [(x, y) for x in range(columns) for y in range(rows)]
+    random.shuffle(valid_positions)
+
+    if avoid_center:
+        valid_positions = [
+            (x, y)
+            for (x, y) in valid_positions
+            if (x <= columns / 4 or x >= 3 * columns / 4)
+            and (y <= rows / 4 or y >= 3 * rows / 4)
+        ]
+
+    # Choose a direction and amount to nudge them by
+    nudge = random.uniform(min_nudge, max_nudge)
+    for x, y in valid_positions[:count]:
+        # x = x + ((1 - random.random() * 2) * nudge)
+        # y = y + ((1 - random.random() * 2) * nudge)
+
+        # How does this map to our canvas?
+        row_height = height / rows
+        column_width = width / columns
+
+        yield (x * column_width, y * row_height)
+
+
+def create_fill_colors(*, background_color):
+    """
+    Given the hex string of the background colour (e.g. #ff0000), generate
+    the hex strings of other, similar colours.
+    """
+    # Parse the CSS colour.  We're only going to vary the lightness of the
+    # generated icons, so work out what we're varying it between -- i.e. are
+    # we going darker than the background, or lighter?
+    red = int(background_color[1:3], 16) / 255
+    green = int(background_color[3:5], 16) / 255
+    blue = int(background_color[5:7], 16) / 255
+
+    hue, lightness, saturation = colorsys.rgb_to_hls(red, green, blue)
+
+    # Light background => darken
+    # Dark background => lighten
+    # Middling => choose at random
+    #
+    # 0.2 is chosen at random
+    is_light_bg = lightness > 0.8
+    is_dark_bg = lightness < 0.2
+
+    darken_icons = is_light_bg or (not is_dark_bg and random.random() > 0.5)
+
+    if darken_icons:
+        min_lightness, max_lightness = (max(0, lightness - 0.2), lightness)
+    else:
+        min_lightness, max_lightness = (lightness, min(lightness + 0.2, 1))
+
+    while True:
+        icon_lightness = random.uniform(min_lightness, max_lightness)
+        r, g, b = colorsys.hls_to_rgb(hue, icon_lightness, saturation)
+        r, g, b = (int(r * 255), int(g * 255), int(b * 255))
+        yield f"#{r:02x}{g:02x}{b:02x}"
+
+
 def create_svg(
-    *, background, icon_name, min_icon_count, max_icon_count, min_scale, max_scale, avoid_center=False, out_path=None
+    *,
+    background,
+    icon_name,
+    min_icon_count,
+    max_icon_count,
+    min_scale,
+    max_scale,
+    avoid_center=False,
+    out_path=None,
 ):
     """
     Creates an SVG file.  Returns the path to the generated SVG.
@@ -94,60 +174,43 @@ def create_svg(
         """,
     ]
 
-    # Parse the CSS colour.  We're only going to vary the lightness of the
-    # generated icons, so work out what we're varying it between -- i.e. are
-    # we going darker than the background, or lighter?
-    red = int(background[1:3], 16) / 255
-    green = int(background[3:5], 16) / 255
-    blue = int(background[5:7], 16) / 255
-
-    hue, lightness, saturation = colorsys.rgb_to_hls(red, green, blue)
-
-    # Light background => darken
-    # Dark background => lighten
-    # Middling => choose at random
-    #
-    # 0.2 is chosen at random
-    is_light_bg = lightness > 0.8
-    is_dark_bg = lightness < 0.2
-
-    darken_icons = is_light_bg or (not is_dark_bg and random.random() > 0.5)
-
-    if darken_icons:
-        min_lightness, max_lightness = (max(0, lightness - 0.2), lightness)
-    else:
-        min_lightness, max_lightness = (lightness, min(lightness + 0.2, 1))
-
     # Get the icon path, and render it at various points on the background.
-    icon_count = random.randint(min_icon_count, max_icon_count)
-    icon_path = get_font_awesome_icon_path(icon_name=icon_name)
+    count = random.randint(min_icon_count, max_icon_count)
+    icon_width, icon_height, icon_path = get_font_awesome_icon_path(icon_name=icon_name)
 
-    for _ in range(icon_count):
-        if avoid_center:
-            x_start = random.choice([
-                random.randint(-50, width // 4),
-                random.randint(3 * width // 4, width + 50)
-            ])
-            y_start = random.choice([
-                random.randint(-50, height // 4),
-                random.randint(3 * height // 4, height + 50)
-            ])
-        else:
-            x_start = random.randint(-50, width + 50)
-            y_start = random.randint(-50, height + 50)
-
-        rotation_angle = random.randint(0, 360)
+    for (x, y), fill_color in zip(
+        create_xy_positions(
+            width=width,
+            height=height,
+            columns=width // 100,
+            rows=height // 100,
+            min_nudge=-0.2,
+            max_nudge=0.2,
+            count=count,
+            avoid_center=avoid_center,
+        ),
+        create_fill_colors(background_color=background)
+    ):
         scale = random.uniform(min_scale, max_scale)
 
-        icon_lightness = random.uniform(min_lightness, max_lightness)
-        r, g, b = colorsys.hls_to_rgb(hue, icon_lightness, saturation)
-        r, g, b = (int(r * 255), int(g * 255), int(b * 255))
-        fill_color = f"#{r:02x}{g:02x}{b:02x}"
+        rotation_angle = random.randint(0, 360)
+        rotation_center_x = scale * icon_width // 2
+        rotation_center_y = scale * icon_height // 2
+
+        # icon_blur = random.randint(0, 20)
+        icon_blur = 0
 
         lines.append(
             f"""
-        <g transform="rotate({rotation_angle} 250 250) translate({x_start} {y_start}) scale({scale} {scale})"
-           style="fill: {fill_color}">
+        <defs>
+            <filter id="blur{icon_blur}" x="0" y="0">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="{icon_blur} {icon_blur}"/>
+            </filter>
+        </defs>
+        <g transform="translate({x} {y})
+                      rotate({rotation_angle} {rotation_center_x} {rotation_center_y})
+                      scale({scale} {scale})"
+           style="fill: {fill_color}; filter: url(#blur{icon_blur})">
             {icon_path}
         </g>"""
         )
@@ -168,12 +231,18 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Create low-contrast backgrounds from Font Awesome icons.  Prints the path to a generated SVG file."
     )
-    parser.add_argument("--background", help="a six-digit CSS colour (e.g. #ff0000)", required=True)
-    parser.add_argument("--icon_name", help="the Font Awesome icon to use (e.g. snowflake)", required=True)
+    parser.add_argument(
+        "--background", help="a six-digit CSS colour (e.g. #ff0000)", required=True
+    )
+    parser.add_argument(
+        "--icon_name",
+        help="the Font Awesome icon to use (e.g. snowflake)",
+        required=True,
+    )
     parser.add_argument("--min_icon_count", type=int, default=5, help="(default: 5)")
-    parser.add_argument("--max_icon_count", type=int, default=10, help="(default: 15)")
-    parser.add_argument("--min_scale", type=float, default=0.2, help="(default: 0.2)")
-    parser.add_argument("--max_scale", type=float, default=1, help="(default: 1)")
+    parser.add_argument("--max_icon_count", type=int, default=30, help="(default: 30)")
+    parser.add_argument("--min_scale", type=float, default=0.15, help="(default: 0.15)")
+    parser.add_argument("--max_scale", type=float, default=0.3, help="(default: 0.3)")
     parser.add_argument("--avoid_center", action="store_true")
 
     # Make a consideration for British people ;-)
@@ -184,15 +253,17 @@ def parse_args():
     result = parser.parse_args()
 
     if result.min_icon_count > result.max_icon_count:
-        sys.exit(f"error: --min_icon_count={result.min_icon_count} should be less than or equal to --max_icon_count={result.max_icon_count}")
+        sys.exit(
+            f"error: --min_icon_count={result.min_icon_count} should be less than or equal to --max_icon_count={result.max_icon_count}"
+        )
 
     if result.min_scale > result.max_scale:
-        sys.exit(f"error: --min_scale={result.min_scale} should be less than or equal to --max_scale={result.max_scale}")
+        sys.exit(
+            f"error: --min_scale={result.min_scale} should be less than or equal to --max_scale={result.max_scale}"
+        )
 
     result = {
-        name: getattr(result, name)
-        for name in dir(result)
-        if not name.startswith("_")
+        name: getattr(result, name) for name in dir(result) if not name.startswith("_")
     }
 
     if result["avoid_centre"]:
