@@ -176,6 +176,9 @@ def parse_args():
     parser.add_argument("--max_scale", type=float, default=1, help="(default: 1)")
     parser.add_argument("--avoid_center", action="store_true")
 
+    # Make a consideration for British people ;-)
+    parser.add_argument("--avoid_centre", action="store_true")
+
     parser.add_argument("--out_path", help="Where to save the SVG")
 
     result = parser.parse_args()
@@ -186,11 +189,17 @@ def parse_args():
     if result.min_scale > result.max_scale:
         sys.exit(f"error: --min_scale={result.min_scale} should be less than or equal to --max_scale={result.max_scale}")
 
-    return {
+    result = {
         name: getattr(result, name)
         for name in dir(result)
         if not name.startswith("_")
     }
+
+    if result["avoid_centre"]:
+        result["avoid_center"] = result["avoid_centre"]
+    del result["avoid_centre"]
+
+    return result
 
 
 if __name__ == "__main__":
