@@ -5,16 +5,16 @@ Some examples:
 
 <table>
     <tr>
-        <td><img src="readme_images/luna.png"></td>
-        <td><img src="readme_images/starfield.png"></td>
+        <td><img src="readme_images/luna.png" alt="A grey background with dark grey crescents."></td>
+        <td><img src="readme_images/starfield.png" alt="A dark purple background with lighter purple five-pointed stars moving across the sky."></td>
     </tr>
     <tr>
-        <td><img src="readme_images/snowflake.png"></td>
-        <td><img src="readme_images/plants.png"></td>
+        <td><img src="readme_images/snowflake.png" alt="A light-blue background with some large turquoise-ish snowflakes."></td>
+        <td><img src="readme_images/plants.png" alt="A green background with lots of small, green seedlings. Each seedling has two leaves."></td>
     </tr>
     <tr>
-        <td><img src="readme_images/mars.png"></td>
-        <td><img src="readme_images/happy.png"></td>
+        <td><img src="readme_images/mars.png" alt="A Mars-type reddish orange background, with rockets in varying levels of darkness set against the background."></td>
+        <td><img src="readme_images/happy.png" alt="A yellow background with a light yellow smiling face at a jaunty angle."></td>
     </tr>
 </table>
 
