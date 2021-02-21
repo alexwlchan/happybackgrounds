@@ -26,9 +26,9 @@ You need Python 3 installed.
 Clone the repo, and run the "happybackgrounds" script to see how it can be used:
 
 ```console
-$ git clone https://github.com/alexwlchan/happybackgrounds.git
-$ cd happybackgrounds
-$ python3 happybackgrounds.py --help
+; git clone https://github.com/alexwlchan/happybackgrounds.git
+; cd happybackgrounds
+; python3 happybackgrounds.py --help
 ```
 
 You can choose:
@@ -43,7 +43,7 @@ The script returns the path to the generated SVG file, or you can specify the ou
 For example:
 
 ```console
-$ python3 happybackgrounds.py --background="#d6fcff" --icon_name="snowflake"
+; python3 happybackgrounds.py --background="#d6fcff" --icon_name="snowflake"
 /var/folders/_c/h0g4c9_n6rg8d2v509hztzdc0000gn/T/tmpfo3v6nqr.svg
 ```
 
