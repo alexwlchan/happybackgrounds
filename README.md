@@ -1,6 +1,6 @@
 # happybackgrounds
 
-This is a script for generating low-contrast wallpapers and backgrounds by splattering icons from Font Awesome over a solid block of colour.
+This is a script for generating simple wallpapers and backgrounds by splattering icons from Font Awesome over a solid block of colour.
 Some examples:
 
 <table>
