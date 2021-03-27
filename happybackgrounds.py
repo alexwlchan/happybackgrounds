@@ -136,6 +136,7 @@ def create_svg(
     max_icon_count,
     min_scale,
     max_scale,
+    max_rotation,
     avoid_center=False,
     out_path=None,
 ):
@@ -193,9 +194,11 @@ def create_svg(
     ):
         scale = random.uniform(min_scale, max_scale)
 
-        rotation_angle = random.randint(0, 360)
+        rotation_angle = random.randint(-max_rotation, max_rotation)
         rotation_center_x = scale * icon_width // 2
         rotation_center_y = scale * icon_height // 2
+
+        scale = random.uniform(min_scale, max_scale)
 
         # icon_blur = random.randint(0, 20)
         icon_blur = 0
@@ -243,6 +246,8 @@ def parse_args():
     parser.add_argument("--max_icon_count", type=int, default=30, help="(default: 30)")
     parser.add_argument("--min_scale", type=float, default=0.15, help="(default: 0.15)")
     parser.add_argument("--max_scale", type=float, default=0.3, help="(default: 0.3)")
+    parser.add_argument("--max_rotation", type=float, default=180, help="(default: 180)")
+
     parser.add_argument("--avoid_center", action="store_true")
 
     # Make a consideration for British people ;-)
